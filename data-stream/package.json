@@ -1,0 +1,13 @@
+{
+  "name": "event-generator",
+  "version": "1.0.0",
+  "description": "DevSight Real-Time Event Generator",
+  "main": "generator.js",
+  "scripts": {
+    "start": "node generator.js"
+  },
+  "keywords": [],
+  "author": "Rajesh",
+  "license": "ISC",
+  "type": "commonjs"
+}
