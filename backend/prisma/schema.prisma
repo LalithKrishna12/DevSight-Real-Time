@@ -1,0 +1,133 @@
+// DevSight AI — core data model
+// Maps directly to PRD sections 5 (features) and 6 (architecture)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  DEVOPS_ENGINEER
+  DEVELOPER
+  MANAGER
+}
+
+enum PlanTier {
+  STARTER
+  PROFESSIONAL
+  ENTERPRISE
+}
+
+enum ServiceStatus {
+  HEALTHY
+  DEGRADED
+  DOWN
+  UNKNOWN
+}
+
+enum IncidentStatus {
+  OPEN
+  INVESTIGATING
+  RESOLVED
+}
+
+enum AlertChannel {
+  EMAIL
+  SLACK
+  TEAMS
+}
+
+model Organization {
+  id        String    @id @default(cuid())
+  name      String
+  planTier  PlanTier  @default(STARTER)
+  createdAt DateTime  @default(now())
+
+  users    User[]
+  services Service[]
+}
+
+model User {
+  id             String       @id @default(cuid())
+  email          String       @unique
+  passwordHash   String
+  name           String
+  role           Role         @default(DEVELOPER)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+}
+
+// A monitored microservice / infra component
+model Service {
+  id             String        @id @default(cuid())
+  name           String
+  organizationId String
+  organization   Organization  @relation(fields: [organizationId], references: [id])
+  status         ServiceStatus @default(UNKNOWN)
+  baselineMs     Float?        // learned "normal" latency baseline, e.g. 200ms
+  createdAt      DateTime      @default(now())
+
+  metrics   Metric[]
+  logs      LogEntry[]
+  incidents Incident[]
+
+  @@index([organizationId])
+}
+
+// Time-series metric points ingested from Prometheus/OTel
+model Metric {
+  id        String   @id @default(cuid())
+  serviceId String
+  service   Service  @relation(fields: [serviceId], references: [id])
+  name      String // e.g. "latency_ms", "cpu_percent", "error_rate"
+  value     Float
+  timestamp DateTime @default(now())
+
+  @@index([serviceId, name, timestamp])
+}
+
+// Raw/streamed log lines ingested from Loki or direct upload
+model LogEntry {
+  id        String   @id @default(cuid())
+  serviceId String
+  service   Service  @relation(fields: [serviceId], references: [id])
+  level     String // info | warn | error
+  message   String
+  timestamp DateTime @default(now())
+
+  @@index([serviceId, timestamp])
+}
+
+// AI-generated structured root cause report
+model Incident {
+  id          String         @id @default(cuid())
+  serviceId   String
+  service     Service        @relation(fields: [serviceId], references: [id])
+  status      IncidentStatus @default(OPEN)
+  whatFailed  String
+  whyReason   String
+  impact      String
+  suggestedFix String
+  rawContext  Json? // metrics + logs snapshot used for the analysis
+  createdAt   DateTime       @default(now())
+  resolvedAt  DateTime?
+
+  alerts Alert[]
+
+  @@index([serviceId, status])
+}
+
+model Alert {
+  id         String       @id @default(cuid())
+  incidentId String
+  incident   Incident     @relation(fields: [incidentId], references: [id])
+  channel    AlertChannel
+  sentAt     DateTime     @default(now())
+  success    Boolean      @default(true)
+}

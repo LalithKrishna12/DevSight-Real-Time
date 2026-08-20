@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL_SQLITE")
+}
+
+enum Role {
+  ADMIN
+  DEVOPS_ENGINEER
+  DEVELOPER
+  MANAGER
+}
+
+enum PlanTier {
+  STARTER
+  PROFESSIONAL
+  ENTERPRISE
+}
+
+enum ServiceStatus {
+  HEALTHY
+  DEGRADED
+  DOWN
+  UNKNOWN
+}
+
+enum IncidentStatus {
+  OPEN
+  INVESTIGATING
+  RESOLVED
+}
+
+enum AlertChannel {
+  EMAIL
+  SLACK
+  TEAMS
+}
+
+model Organization {
+  id        String    @id @default(cuid())
+  name      String
+  planTier  PlanTier  @default(STARTER)
+  createdAt DateTime  @default(now())
+
+  users    User[]
+  services Service[]
+}
+
+model User {
+  id             String       @id @default(cuid())
+  email          String       @unique
+  passwordHash   String
+  name           String
+  role           Role         @default(DEVELOPER)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+}
+
+model Service {
+  id             String        @id @default(cuid())
+  name           String
+  organizationId String
+  organization   Organization  @relation(fields: [organizationId], references: [id])
+  status         ServiceStatus @default(UNKNOWN)
+  baselineMs     Float?
+  createdAt      DateTime      @default(now())
+
+  metrics   Metric[]
+  logs      LogEntry[]
+  incidents Incident[]
+
+  @@index([organizationId])
+}
+
+model Metric {
+  id        String   @id @default(cuid())
+  serviceId String
+  service   Service  @relation(fields: [serviceId], references: [id])
+  name      String
+  value     Float
+  timestamp DateTime @default(now())
+
+  @@index([serviceId, name, timestamp])
+}
+
+model LogEntry {
+  id        String   @id @default(cuid())
+  serviceId String
+  service   Service  @relation(fields: [serviceId], references: [id])
+  level     String
+  message   String
+  timestamp DateTime @default(now())
+
+  @@index([serviceId, timestamp])
+}
+
+model Incident {
+  id          String         @id @default(cuid())
+  serviceId   String
+  service     Service        @relation(fields: [serviceId], references: [id])
+  status      IncidentStatus @default(OPEN)
+  whatFailed  String
+  whyReason   String
+  impact      String
+  suggestedFix String
+  rawContext  Json?
+  createdAt   DateTime       @default(now())
+  resolvedAt  DateTime?
+
+  alerts Alert[]
+
+  @@index([serviceId, status])
+}
+
+model Alert {
+  id         String       @id @default(cuid())
+  incidentId String
+  incident   Incident     @relation(fields: [incidentId], references: [id])
+  channel    AlertChannel
+  sentAt     DateTime     @default(now())
+  success    Boolean      @default(true)
+}

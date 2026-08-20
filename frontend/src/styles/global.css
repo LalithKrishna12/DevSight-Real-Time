@@ -1,0 +1,425 @@
+/* DevSight AI — design tokens
+   Direction: an ops tool people stare at during an incident at 2am — not a
+   marketing site. Dark, low-glare, monospace for anything that's a number
+   or a machine-generated fact, grotesk for anything a human wrote.
+   The signature element is the "translated" root-cause line: it always
+   renders as a single plain-English sentence in a distinct color, so it
+   reads as the one thing worth reading on a screen full of data. */
+
+:root {
+  --bg: #0f1115;
+  --bg-raised: #161922;
+  --bg-inset: #0a0b0e;
+  --border: #262b38;
+  --text: #e7e9ee;
+  --text-dim: #8b93a7;
+  --text-faint: #565f75;
+
+  /* status */
+  --ok: #3ddc97;
+  --degraded: #f5a623;
+  --down: #ef5b5b;
+
+  /* the "translation" accent — used ONLY for AI-authored plain-English lines */
+  --signal: #8f8bff;
+
+  --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+
+  --radius: 8px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+a {
+  color: inherit;
+}
+
+button {
+  font-family: inherit;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+}
+
+code,
+.mono {
+  font-family: var(--font-mono);
+}
+
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background: var(--bg-raised);
+  border-right: 1px solid var(--border);
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.sidebar .brand {
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+}
+
+.sidebar .brand span {
+  color: var(--signal);
+}
+
+.sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebar nav a {
+  text-decoration: none;
+  color: var(--text-dim);
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.sidebar nav a.active,
+.sidebar nav a:hover {
+  background: var(--bg-inset);
+  color: var(--text);
+}
+
+.main {
+  flex: 1;
+  padding: 28px 36px;
+  max-width: 1100px;
+  overflow-y: auto;
+}
+
+.page-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+
+.page-sub {
+  color: var(--text-dim);
+  font-size: 13px;
+  margin: 0 0 20px;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+
+.stat-card .value {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.stat-card .label {
+  color: var(--text-dim);
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.card {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  margin-bottom: 14px;
+}
+
+.card-title {
+  font-weight: 600;
+  font-size: 12.5px;
+  margin: 0 0 10px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.service-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.service-row:last-child {
+  border-bottom: none;
+}
+
+.status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.status-dot.HEALTHY {
+  background: var(--ok);
+}
+.status-dot.DEGRADED {
+  background: var(--degraded);
+}
+.status-dot.DOWN {
+  background: var(--down);
+}
+.status-dot.UNKNOWN {
+  background: var(--text-faint);
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--bg-inset);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+}
+
+.badge.healthy {
+  background: rgba(61, 220, 151, 0.1);
+  border-color: rgba(61, 220, 151, 0.3);
+  color: var(--ok);
+}
+
+.badge.degraded,
+.badge.warn,
+.badge.investigating {
+  background: rgba(245, 166, 35, 0.1);
+  border-color: rgba(245, 166, 35, 0.3);
+  color: var(--degraded);
+}
+
+.badge.down,
+.badge.error,
+.badge.open {
+  background: rgba(239, 91, 91, 0.1);
+  border-color: rgba(239, 91, 91, 0.3);
+  color: var(--down);
+}
+
+.badge.resolved,
+.badge.info {
+  background: rgba(143, 139, 255, 0.1);
+  border-color: rgba(143, 139, 255, 0.3);
+  color: var(--signal);
+}
+
+.incident-row {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  background: var(--bg-raised);
+  transition: border-color 0.15s ease;
+}
+
+.incident-row:hover {
+  border-color: var(--signal);
+}
+
+.incident-row .meta {
+  font-size: 11px;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+}
+
+/* the signature element: the plain-English root-cause line */
+.translation {
+  color: var(--signal);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 4px 0;
+}
+
+.translation .label {
+  color: var(--text-faint);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.btn {
+  background: var(--signal);
+  color: #0f1115;
+  border: none;
+  border-radius: var(--radius);
+  padding: 8px 14px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.btn:hover {
+  opacity: 0.9;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn.secondary {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.btn.secondary:hover {
+  background: var(--bg-inset);
+}
+
+.tab-group {
+  display: flex;
+  background: var(--bg-inset);
+  padding: 3px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  gap: 2px;
+}
+
+.tab-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tab-btn.active {
+  background: var(--bg-raised);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.filter-select {
+  background: var(--bg-inset);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 10px;
+  border-radius: var(--radius);
+  font-size: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.field label {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.field input,
+.field textarea,
+.field select {
+  background: var(--bg-inset);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 9px 11px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.auth-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 400px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 32px;
+}
+
+.error-text {
+  color: var(--down);
+  font-size: 12px;
+  margin: -4px 0 10px;
+}
+
+/* Modal overlay */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  padding: 20px;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 460px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+}
